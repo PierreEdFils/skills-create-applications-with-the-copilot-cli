@@ -6,6 +6,9 @@
 //  - subtraction (sub)
 //  - multiplication (mul)
 //  - division (div)
+//  - modulo (mod)
+//  - exponentiation/power (pow)
+//  - square root (sqrt)
 //
 // Usage (positional):
 //   node src/calculator.js add 2 3
@@ -18,13 +21,17 @@ function printHelp() {
   console.log(`Calculator CLI
 
 Supports the following operations:
-  add  - addition
-  sub  - subtraction
-  mul  - multiplication
-  div  - division
+  add   - addition
+  sub   - subtraction
+  mul   - multiplication
+  div   - division
+  mod   - modulo (remainder)
+  pow   - exponentiation / power
+  sqrt  - square root (unary)
 
 Usage (positional):
   node src/calculator.js <op> <a> <b>
+  For unary op like sqrt: node src/calculator.js sqrt <a>
 
 Usage (flags):
   node src/calculator.js --op <op> --a <a> --b <b>
@@ -32,6 +39,8 @@ Usage (flags):
 Examples:
   node src/calculator.js add 4 5      # -> 9
   node src/calculator.js --op div --a 10 --b 2  # -> 5
+  node src/calculator.js pow 2 8      # -> 256
+  node src/calculator.js sqrt 9       # -> 3
 `);
 }
 
@@ -50,6 +59,25 @@ function parseFlags(argv) {
     }
   }
   return flags;
+}
+
+// New helper functions
+function modulo(a, b) {
+  if (b === 0) {
+    throw new Error('Modulo by zero');
+  }
+  return a % b;
+}
+
+function power(base, exponent) {
+  return Math.pow(base, exponent);
+}
+
+function squareRoot(n) {
+  if (n < 0) {
+    throw new Error('Square root of negative number');
+  }
+  return Math.sqrt(n);
 }
 
 function compute(op, a, b) {
@@ -71,6 +99,16 @@ function compute(op, a, b) {
         throw new Error('Division by zero');
       }
       return a / b;
+    case 'mod':
+    case '%':
+      return modulo(a, b);
+    case 'pow':
+    case '**':
+    case '^':
+      return power(a, b);
+    case 'sqrt':
+      // unary operation: use 'a' as the operand, ignore b
+      return squareRoot(a);
     default:
       throw new Error(`Unsupported operation: ${op}`);
   }
@@ -97,21 +135,21 @@ function main() {
     aStr = flags.a;
     bStr = flags.b;
   } else {
-    // positional: op a b
+    // positional: op a b (for unary ops like sqrt, b may be undefined)
     op = argv[0];
     aStr = argv[1];
     bStr = argv[2];
   }
 
-  if (!op || aStr === undefined || bStr === undefined) {
-    console.error('Error: missing arguments. Expected: <op> <a> <b>');
+  if (!op || aStr === undefined) {
+    console.error('Error: missing arguments. Expected: <op> <a> [<b>]');
     printHelp();
     process.exit(2);
   }
 
   const a = Number(aStr);
-  const b = Number(bStr);
-  if (!isFinite(a) || !isFinite(b)) {
+  const b = bStr === undefined ? undefined : Number(bStr);
+  if (!isFinite(a) || (bStr !== undefined && !isFinite(b))) {
     console.error('Error: operands must be valid numbers');
     process.exit(2);
   }
@@ -131,4 +169,4 @@ if (require.main === module) {
   main();
 }
 
-module.exports = { compute };
+module.exports = { compute, modulo, power, squareRoot };

@@ -26,8 +26,25 @@ describe('Calculator compute()', () => {
     expect(() => compute('/', 1, 0)).toThrow(/Division by zero/);
   });
 
+  test('modulo (mod) returns correct remainder', () => {
+    expect(compute('mod', 5, 2)).toBe(1);
+    expect(compute('%', 10, 3)).toBe(1);
+  });
+
+  test('power/exponentiation (pow) returns correct result', () => {
+    expect(compute('pow', 2, 3)).toBe(8);
+    expect(compute('^', 3, 2)).toBe(9);
+    expect(compute('**', 4, 0.5)).toBeCloseTo(2);
+  });
+
+  test('square root (sqrt) returns correct value and handles edge cases', () => {
+    expect(compute('sqrt', 16)).toBe(4);
+    expect(compute('sqrt', 2)).toBeCloseTo(Math.sqrt(2));
+    expect(() => compute('sqrt', -1)).toThrow(/Square root of negative number/);
+  });
+
   test('unsupported operation throws', () => {
-    expect(() => compute('pow', 2, 3)).toThrow(/Unsupported operation/);
+    expect(() => compute('unknownop', 2, 3)).toThrow(/Unsupported operation/);
   });
 
   test('works with float numbers', () => {
